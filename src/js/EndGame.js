@@ -1,16 +1,18 @@
-var endState = {
-  init: function() {
+function EndGame() {
+  function init() {}
 
-  },
-  preload: function() {
+  function preload() {}
 
-  },
-  create: function() {
+  function create() {}
 
-  },
-  update: function() {
+  function update() {}
 
+  return {
+    init: init,
+    preload: preload,
+    create: create,
+    update: update
   }
-};
+}
 
-game.state.add('end', endState);
+game.state.add('end', new EndGame());

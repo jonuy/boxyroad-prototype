@@ -1,24 +1,32 @@
-var mainMenuState = {
-  init: function() {
+function MainMenu() {
+
+  function init() {
     var text = 'Press "Enter" to start';
     var style = { font: "24px Arial", fill: "#fff", align: "center" };
     var t = game.add.text(this.world.centerX, this.world.centerY, text, style);
     t.anchor.setTo(0.5, 0.5);
-  },
-  preload: function() {
+  }
 
-  },
-  create: function() {
+  function preload() {}
+
+  function create() {
     var enterKey = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
-    enterKey.onDown.addOnce(this.startGame, this);
-  },
-  update: function() {
+    enterKey.onDown.addOnce(startGame, this);
+  }
 
-  },
-  startGame: function() {
+  function update() {}
+
+  function startGame() {
     game.state.start('game');
   }
-};
 
-game.state.add('main-menu', mainMenuState);
+  return {
+    init: init,
+    preload: preload,
+    create: create,
+    update: update
+  }
+}
+
+game.state.add('main-menu', new MainMenu());
 game.state.start('main-menu');
