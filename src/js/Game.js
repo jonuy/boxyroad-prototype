@@ -1,5 +1,10 @@
 function GameState() {
 
+  var SCORE_INCREMENT = 10;
+
+  var scoreText;
+  var score;
+  var movedBack;
   var player;
   // var enemies;
 
@@ -7,6 +12,9 @@ function GameState() {
     game.world.setBounds(0, 0, game.width, game.height);
     game.camera.width = game.width;
     game.camera.height = game.height;
+
+    score = 0;
+    movedBack = false;
   }
 
   function preload() {
@@ -33,7 +41,12 @@ function GameState() {
     // Set player as a sprite
     player = game.add.sprite((game.width / 2) - 50, game.height - 50, 'player');
     player.anchor.setTo(0.5, 0.5);
-    player.scale.setTo(10, 10);
+    player.scale.setTo(9, 9);
+
+    // Score text
+    var text = 'Score: ' + score;
+    style = {font: '18px Arial', fill: '#fff', align: 'left'};
+    scoreText = game.add.text(game.camera.width - 128, 32, text, style);
   }
 
   function update() {
@@ -41,6 +54,8 @@ function GameState() {
 
     updateGameBounds(playerPos);
     updateCameraPosition(playerPos);
+
+    updateEnemies();
   }
 
   function render() {
@@ -52,11 +67,19 @@ function GameState() {
     if (this.key == Phaser.Keyboard.UP) {
       console.log('UP pressed');
       player.y -= 100;
+
+      if (!movedBack) {
+        incrementScore();
+      }
+      else {
+        movedBack = false;
+      }
     }
     else if (this.key == Phaser.Keyboard.DOWN) {
       console.log('DOWN pressed');
-      if (player.bottom < game.world.bounds.y + game.height) {
+      if (player.bottom + 100 < game.world.bounds.y + game.height) {
         player.y += 100;
+        movedBack = true;
       }
     }
     else if (this.key == Phaser.Keyboard.LEFT) {
@@ -91,6 +114,22 @@ function GameState() {
     if (cameraBottom - playerBottom > 100) {
       game.camera.y -= 100;
     }
+  }
+
+  function incrementScore() {
+    if (scoreText) {
+      // Don't move position the first time
+      if (score) {
+        scoreText.position.y -= 100;
+      }
+
+      score += SCORE_INCREMENT;
+      scoreText.setText('Score: ' + score);
+    }
+  }
+
+  function updateEnemies() {
+
   }
 
   return {
