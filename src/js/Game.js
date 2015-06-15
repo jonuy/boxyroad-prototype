@@ -1,12 +1,17 @@
 function GameState() {
 
-  var SCORE_INCREMENT = 10;
+  var SCORE_INCREMENT = 1;
+  var SPAWN_INTERVAL_MIN = 0.25;
+  var SPAWN_INTERVAL_MAX = 1;
 
   var scoreText;
   var score;
   var movedBack;
   var player;
-  // var enemies;
+  var enemies;
+
+  var timeUntilSpawn;
+  var lastCheckedTime;
 
   function init() {
     game.world.setBounds(0, 0, game.width, game.height);
@@ -15,12 +20,14 @@ function GameState() {
 
     score = 0;
     movedBack = false;
+
+    enemies = new Array();
   }
 
   function preload() {
     // Load assets
-    game.load.image('player', 'assets/redbox.png');
-    game.load.image('enemy1', 'assets/bluebox.png');
+    game.load.image('player', 'assets/bluebox.png');
+    game.load.image('enemy1', 'assets/redbox.png');
     game.load.image('enemy2', 'assets/greenbox.png');
 
     // Key bindings
@@ -61,6 +68,7 @@ function GameState() {
   function render() {
     game.debug.cameraInfo(game.camera, 32, 32);
     game.debug.spriteInfo(player, 32, 128);
+    game.debug.text('Enemies: ' + enemies.length, 32, 256);
   }
 
   function onKeyDown() {
@@ -129,7 +137,73 @@ function GameState() {
   }
 
   function updateEnemies() {
+    // Start spawning after player's moved 3 spaces
+    if (game.world.bounds.y > -300)
+      return;
 
+    spawnEnemies();
+    moveEnemies();
+    cullEnemies();
+  }
+
+  function spawnEnemies() {
+    // Is it ok to spawn a new object yet?
+    var currTime = (new Date()).getTime();
+    var deltaTime = currTime - lastCheckedTime;
+    if (timeUntilSpawn >= 0) {
+      lastCheckedTime = currTime;
+      timeUntilSpawn -= deltaTime;
+      return;
+    }
+
+    // Choose a Y coord to start from
+    var row = Math.floor(Math.random() * 10);
+    var ypos = game.world.bounds.y - 500 + (row * 100) + 50;
+
+    // Choose a direction to go in
+    var dir = Math.round(Math.random());
+    var velocity = 4;
+    var xpos = -150;
+    if (dir == 0) {
+      velocity *= -1;
+      xpos = game.width + 150;
+    }
+
+    // Create sprite
+    var enemy = game.add.sprite(xpos, ypos, 'enemy1');
+    enemy.anchor.setTo(0.5, 0.5);
+    enemy.scale.setTo(9, 9);
+    enemy.velocity = velocity;
+    enemies[enemies.length] = enemy;
+
+    // Set time until next spawn
+    lastCheckedTime = currTime;
+    var spawnRange = SPAWN_INTERVAL_MAX - SPAWN_INTERVAL_MIN;
+    timeUntilSpawn = (Math.round(Math.random() * spawnRange) + SPAWN_INTERVAL_MIN) * 1000;
+  }
+
+  function moveEnemies() {
+    var i;
+    var enemy;
+
+    for (i = 0; i < enemies.length; i++) {
+      enemy = enemies[i];
+      enemy.x += enemy.velocity;
+    }
+  }
+
+  function cullEnemies() {
+    var i;
+    var enemy;
+    var remaining;
+
+    for (i = enemies.length - 1; i >= 0; i--) {
+      enemy = enemies[i];
+      if (enemy.y > game.camera.y + game.camera.height) {
+        enemy.destroy();
+        enemies.splice(i, 1); 
+      }
+    }
   }
 
   return {
